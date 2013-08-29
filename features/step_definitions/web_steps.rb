@@ -55,6 +55,45 @@ And /^I am logged into the admin panel$/ do
   end
 end
 
+Given /the following users exist/ do |users_table|
+  users_table.hashes.each do |user|
+    User.create(user)
+  end
+end
+
+Given /the following articles exist/ do |articles_table|
+  articles_table.hashes.each do |article|
+    Article.create(article)
+  end
+end
+
+Given /the following comments exist/ do |comments_table|
+  comments_table.hashes.each do |comment|
+    Comment.create(comment)
+  end
+end
+
+Given /^I am logged in as "(.*?)" with password "(.*?)"$/ do |user, password|
+  visit '/accounts/login'
+  fill_in 'user_login', :with => user
+  fill_in 'user_password', :with => password
+  click_button 'Login'
+  username = User.find_by_login(user).name
+  if page.respond_to? :should
+    page.should have_content("Welcome back, #{username}!")
+  else
+    assert page.has_content?("Welcome back, #{username}!")
+  end
+end
+
+Given /^the articles with ids "(.*?)" and "(.*?)" were merged$/ do |article1, article2|
+  Article.find(article1).merge_with(article2)
+end
+
+Then /^"(.*?)" should be the author of (\d+) articles$/ do |author, article_count|
+  Article.find_by_author(author).count.should equal article_count
+end
+
 # Single-line step scoper
 When /^(.*) within (.*[^:])$/ do |step, parent|
   with_scope(parent) { When step }
