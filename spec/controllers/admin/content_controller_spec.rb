@@ -481,7 +481,48 @@ describe Admin::ContentController do
     it_should_behave_like 'destroy action'
     it_should_behave_like 'autosave action'
 
-    describe 'edit action' do
+        describe 'merge action' do
+      before do 
+        @article1 = Factory(:article)
+        @article2 = Factory(:article)
+	@fake_article = mock('fake_article')
+      end
+      it 'should call the model method that merges movies' do
+	@article.should_receive(:merge_with).with(@article2.id).and_return(@fake_article)
+        post :merge_article, {:id => @article1.id, :merge_with => @article2.id}
+      end
+      #TODO: replace movie methods with appropriate article content actions
+      describe 'after valid merge' do
+        before :each do
+          Movie.stub(:merge_with).and_return(@fake_article)
+          post :merge_article, {:id => @article1.id, :merge_with => @article2.id}
+        end
+        it 'should select the new template for rendering' do
+          response.should render_template('new')
+        end
+        it 'should make the merged article available to that template' do
+          assigns(:article).should == @fake_results
+        end
+      end
+      describe 'after trying to merge with an article that doesnt exist' do
+        it 'should render new page' do
+          Movie.stub(:merge_with).and_raise(Article::NoArticleError)
+          post :merge_article, {:id => @article1.id, :merge_with => 12030958}
+          response.should render_template('new')
+          response.should contain(/Error merging: article 12030958 does not exist/)
+        end
+      end
+      describe 'after trying to merge with itself' do
+        it 'should render new page' do
+          Movie.stub(:merge_with).and_raise(Article::DuplicateArticleError)
+          post :search_same_director, {:id => @article1.id, :merge_with => @article1.id}
+          response.should render_template('new')
+	  response.should contain(/Error merging: cannot merge an article with itself/)
+        end
+      end
+    end
+
+    describe 'edit action' do      
 
       it 'should edit article' do
         get :edit, 'id' => @article.id
