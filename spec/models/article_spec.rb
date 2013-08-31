@@ -251,7 +251,7 @@ describe Article do
 
   it "test_find_published" do
     article = Factory(:article, :title => 'Article 1!', :state => 'published')
-    Factory(:article, :published => false, :state => 'draft')
+    article2 = Factory(:article, :published => false, :state => 'draft')
     @articles = Article.find_published
     assert_equal 1, @articles.size
     @articles = Article.find_published(:all, :conditions => "title = 'Article 1!'")
@@ -627,6 +627,54 @@ describe Article do
         article = Article.get_or_build_article(already_exist_article.id)
         article.should be == already_exist_article
       end
+    end
+
+  end
+
+  describe "#merge_with" do
+    before(:each) do
+      @article1 = Factory.create(:article)
+      @article2 = Factory.create(:article) 
+    end
+
+    it "should return article" do
+      merged_article = @article1.merge_with(@article2)
+      merged_article.should be_a(Article)
+    end
+    
+    it "should have content from both articles" do
+      a1_content = "Content1"
+      a2_content = "Content2"
+      @article1.body_and_extended = a1_content
+      @article2.body_and_extended = a2_content
+      merged_article = @article1.merge_with(@article2)
+      merged_article.body_and_extended.should include(a1_content)
+      merged_article.body_and_extended.should include(a2_content)
+    end
+
+    it "should have author from one of the two articles" do
+      a1_author = "Author1"
+      a2_author = "Author2"
+      @article1.author = a1_author
+      @article2.author = a2_author
+      merged_article = @article1.merge_with(@article2)
+      merged_article.author.should eql(a1_author) or eql(a2_author)
+    end
+
+    it "should have title from one of the two articles" do
+      a1_title = "Title1"
+      a2_title = "Title2"
+      @article1.title = a1_title
+      @article2.title = a2_title
+      merged_article = @article1.merge_with(@article2)
+      merged_article.title.should eql(a1_title) or eql(a2_title)
+    end
+
+    it "should have comments from both articles" do
+      a1_comment = Factory(:comment, :article => @article1)
+      a2_comment = Factory(:comment, :article => @article2)
+      merged_article = @article1.merge_with(@article2)
+      merged_article.comments.count.should eql(2)
     end
 
   end
