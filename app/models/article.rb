@@ -416,11 +416,23 @@ class Article < Content
     user.admin? || user_id == user.id
   end
 
-  def merge_with(other_article)
-    self.body_and_extended << other_article.body_and_extended
+  def merge_with(other_article_id)
+    other_article = Article.find_by_id(other_article_id)
+
+    if not self.id or not other_article.id
+      return false
+    end
+
+    self.body = self.body + "\n" + other_article.body
+
     other_article.comments.each do |comment|
       comment.update_attributes(:article => self)
     end
+    self.save!
+
+    tomerge = Article.find_by_id(other_article_id)
+    tomerge.destroy
+
     return self
   end
 

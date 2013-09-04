@@ -34,7 +34,7 @@ Feature: Merge Articles
     And I should see "Merge Articles"
     When I fill in "merge_with" with "4"
     And I press "Merge"
-    Then I should be on the admin content page
+    Then I should be on the edit page for article 3
     And I should see "Articles successfully merged!"
 
   Scenario: The merged articles should contain the text of both previous articles
@@ -47,8 +47,8 @@ Feature: Merge Articles
 
   Scenario: The merged article should have one author (either of the originals)
     Given the articles with ids "3" and "4" were merged
-    Then "administrator" should be the author of 1 articles
-    And "blogpublisher" should be the author of 0 articles
+    Then "user_1" should be the author of 1 articles
+    And "user_2" should be the author of 0 articles
 
   Scenario: The merged articles should contain the comments of both previous articles
     Given the articles with ids "3" and "4" were merged

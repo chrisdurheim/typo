@@ -91,7 +91,7 @@ Given /^the articles with ids "(.*?)" and "(.*?)" were merged$/ do |article1, ar
 end
 
 Then /^"(.*?)" should be the author of (\d+) articles$/ do |author, article_count|
-  Article.find_by_author(author).count.should equal article_count
+  Article.where("author = ?", author).count.should equal article_count.to_i
 end
 
 # Single-line step scoper
